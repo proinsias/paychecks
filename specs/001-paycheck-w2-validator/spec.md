@@ -8,14 +8,25 @@ from pdfs and validate the calculations based on the annual salary, (ii) compare
 data from a year's worth of pdfs with the W2 at the end of year and ensure the W2
 calculations match the paycheck data."
 
+## Clarifications
+
+### Session 2026-03-22
+
+- Q: What is the interaction modality of the application? → A: Command-line interface (CLI) — arguments in, formatted report out to terminal.
+- Q: What is the report output format? → A: Terminal output by default; optional `--output <file>` flag saves report to plain text or CSV.
+- Q: How is pay frequency determined? → A: User declares it as a required CLI argument (e.g., `--frequency biweekly`); no auto-detection.
+- Q: Is parsed paycheck data persisted between runs? → A: Stateless — user provides PDF paths on every run; no data is persisted between sessions.
+- Q: Is Form W-2c (corrected W-2) supported? → A: Out of scope — W-2c not supported; CLI must print a clear unsupported-format message if a W-2c is detected.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Validate a Single Paycheck PDF (Priority: P1)
 
 A user has received a paycheck PDF and wants to confirm that the calculations on it are
-internally consistent with their known annual salary. They load the PDF into the application,
-provide their annual salary, and the application reports whether gross pay, net pay, tax
-withholdings, and deductions are mathematically correct for the pay period.
+internally consistent with their known annual salary. They run a CLI command providing the
+PDF path and their annual salary; the application prints a report to the terminal showing
+whether gross pay, net pay, tax withholdings, and deductions are mathematically correct
+for the pay period.
 
 **Why this priority**: This is the foundational value of the tool — giving users confidence
 that each individual paycheck is accurate before doing any year-end aggregation.
@@ -27,10 +38,10 @@ without any W-2 data.
 
 **Acceptance Scenarios**:
 
-1. **Given** a valid paycheck PDF and correct annual salary, **When** the user submits them
-   for validation, **Then** the application displays a pass/fail result for each calculation
-   (gross pay, net pay, federal tax, state tax, other deductions) with the expected and
-   actual values shown side-by-side.
+1. **Given** a valid paycheck PDF and correct annual salary, **When** the user runs the
+   validate command, **Then** the CLI prints a pass/fail result for each calculation
+   (gross pay, net pay, federal tax, state tax, other deductions) with expected and
+   actual values shown side-by-side in the terminal.
 2. **Given** a paycheck PDF where net pay does not equal gross pay minus deductions,
    **When** the user validates it, **Then** the application flags the specific discrepancy
    with the calculated vs. stated amounts.
@@ -44,9 +55,10 @@ without any W-2 data.
 ### User Story 2 - Year-End W-2 Reconciliation (Priority: P2)
 
 A user has accumulated paycheck PDFs throughout the year and has received their W-2. They
-load all paycheck PDFs and the W-2 into the application, which aggregates the paycheck data
-and compares it against the W-2 totals to confirm that wages, federal withholding, Social
-Security, Medicare, and state taxes all match.
+run a CLI command providing a directory of paycheck PDFs and the W-2 PDF path; the
+application aggregates the paycheck data, compares it against the W-2 totals, and prints
+a reconciliation report to the terminal confirming whether wages, federal withholding,
+Social Security, Medicare, and state taxes all match.
 
 **Why this priority**: This is the primary year-end use case. Discrepancies between
 paychecks and the W-2 can affect tax filings and require correction before submission.
@@ -72,9 +84,9 @@ matches and flags discrepancies for each W-2 box independently.
 ### User Story 3 - Batch Validation of Full-Year Paychecks (Priority: P3)
 
 A user wants to validate all paychecks for the year at once before starting the W-2
-reconciliation. They load a folder of paycheck PDFs and the application validates each one
-against the annual salary, producing a summary report showing which paychecks passed and
-which have issues.
+reconciliation. They run a CLI command pointing to a folder of paycheck PDFs; the
+application validates each one against the annual salary and prints a summary table to
+the terminal showing which paychecks passed and which have issues.
 
 **Why this priority**: Catching individual paycheck errors before year-end makes
 reconciliation cleaner and helps users identify payroll problems earlier.
@@ -117,15 +129,18 @@ without requiring W-2 data.
   number of pay periods, within a configurable tolerance (default ±$0.02 for rounding).
 - **FR-003**: The system MUST validate that net pay equals gross pay minus all itemized
   deductions within a configurable tolerance (default ±$0.02).
-- **FR-004**: The system MUST extract the following fields from W-2 PDFs: Box 1 (wages),
+- **FR-004**: The system MUST extract the following fields from standard IRS Form W-2 PDFs
+  (Form W-2c is explicitly not supported — see Assumptions): Box 1 (wages),
   Box 2 (federal tax withheld), Box 3 (Social Security wages), Box 4 (Social Security tax
   withheld), Box 5 (Medicare wages), Box 6 (Medicare tax withheld), Box 16 (state wages),
   Box 17 (state income tax withheld).
 - **FR-005**: The system MUST compare each W-2 field against the aggregated paycheck total
   for the corresponding value and report any difference exceeding a configurable tolerance
   (default ±$1.00 for year-end rounding).
-- **FR-006**: The system MUST support the following pay frequencies: weekly (52), bi-weekly
-  (26), semi-monthly (24), and monthly (12).
+- **FR-006**: The system MUST support the following pay frequencies, declared by the user
+  via a required `--frequency` CLI argument: `weekly` (52 periods), `biweekly` (26),
+  `semimonthly` (24), and `monthly` (12). The system MUST NOT attempt to auto-detect
+  frequency from PDF dates.
 - **FR-007**: The system MUST produce a structured validation report per paycheck showing
   expected vs. actual values and a pass/fail/warning status for each validated field.
 - **FR-008**: The system MUST produce a year-end reconciliation report showing aggregated
@@ -137,6 +152,14 @@ without requiring W-2 data.
   validated against the new salary.
 - **FR-011**: The system MUST provide clear, actionable error messages when a PDF field
   cannot be extracted, including the filename, page number, and field name.
+- **FR-012**: The system MUST expose all functionality through a CLI with named subcommands
+  (e.g., `validate`, `reconcile`, `batch`); all reports MUST be printed to stdout; errors
+  and warnings MUST be printed to stderr; the CLI MUST exit with a non-zero code on
+  validation failures or extraction errors.
+- **FR-013**: All CLI subcommands MUST accept an optional `--output <file>` flag; when
+  provided, the report MUST be saved to the specified file path in either plain text
+  (`.txt`) or CSV (`.csv`) format, inferred from the file extension; terminal output
+  is always produced regardless of whether `--output` is specified.
 
 ### Key Entities
 
@@ -173,14 +196,18 @@ without requiring W-2 data.
 ## Assumptions
 
 - Paycheck PDFs are US-based and use USD currency.
-- Pay frequencies are regular; irregular or one-off off-cycle paychecks are not in scope
-  for automatic pay-period detection, though they may appear in batches.
+- Pay frequency is always user-declared via CLI argument; the application does not attempt
+  to infer it. Irregular or off-cycle paychecks may appear in batches but do not affect
+  the declared frequency used for validation.
 - The W-2 is provided as a PDF in the standard IRS Form W-2 layout.
 - Users know their annual salary and can enter multiple values for mid-year changes.
-- The application runs locally — paycheck and W-2 data are never transmitted outside the
-  user's machine.
+- The application is a stateless CLI tool that runs locally — no paycheck or W-2 data
+  is persisted between runs, cached, or transmitted outside the user's machine. The PDF
+  files themselves are always the source of truth.
 - Multi-employer scenarios (multiple W-2s from different employers) are out of scope for
   this feature iteration.
+- Form W-2c (corrected W-2) is out of scope; if a W-2c is detected, the CLI MUST exit
+  with a clear unsupported-format error rather than attempting to parse it.
 - Supplemental pay (bonuses, commissions) on a paycheck is flagged with a warning but does
   not cause the paycheck to fail validation, since gross pay will legitimately exceed the
   prorated salary.

@@ -28,7 +28,7 @@ In `claude`:
 /speckit.clarify	
 
 # Provide your tech stack and architecture choices.
-/speckit.plan The application uses Vite with minimal number of libraries. Use vanilla HTML, CSS, and JavaScript as much as possible. Images are not uploaded anywhere and metadata is stored in a local SQLite database.
+/speckit.plan The application uses a python TUI module with pytest tests. Use python OCR libraries to extract information from pdfs. Only if necessary, call out to the `claude` CLI command to extract information from pdfs. Use `uv` for project dependency management.
 
 # Create an actionable task list from your implementation plan.
 /speckit.tasks
