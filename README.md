@@ -22,7 +22,7 @@ In `claude`:
 /speckit.constitution Create principles focused on code quality, testing standards, user experience consistency, and performance requirements
 
 # Describe what you want to build. Focus on the what and why, not the tech stack.
-/speckit.specify Build an application that can help me organize my photos in separate photo albums. Albums are grouped by date and can be re-organized by dragging and dropping on the main page. Albums are never in other nested albums. Within each album, photos are previewed in a tile-like interface.
+/speckit.specify Build an application that can: (i) extract paycheck data from pdfs and validate the calculations based on the annual salary, (ii) compare paycheck data from a year's worth of pdfs with the W2 at the end of year and ensure the W2 calculations match the paycheck data.
 
 # Clarify underspecified areas (recommended before /speckit.plan).
 /speckit.clarify	
