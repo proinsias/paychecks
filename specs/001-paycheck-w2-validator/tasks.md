@@ -82,7 +82,7 @@ description: "Task list for Paycheck & W-2 Validator"
 ### Implementation for User Story 1
 
 - [ ] T026 [US1] Implement per-paycheck validation logic in `src/paychecks/validator/paycheck.py`: `validate_paycheck(paycheck, salary_schedule) -> PaycheckValidationResult`; enforce tolerance from constants; handle supplemental pay as WARNING
-- [ ] T027 [US1] Implement `validate` Typer subcommand in `src/paychecks/cli.py`: wire `--salary`, `--frequency`, `--salary-change`, `--tolerance`, `--output` options; call extractor cascade → validator → reporter; set exit code per contract
+- [ ] T027 [US1] Implement `validate` Typer subcommand in `src/paychecks/cli.py`: wire `--salary`, `--frequency`, `--salary-change`, `--tolerance`, `--output` options; call extractor cascade → validator → reporter; set exit code per contract; show a `rich.status.Status` spinner with the current extraction method ("Extracting via OCR…" / "Extracting via Claude CLI…") when a fallback extractor is invoked (constitution Principle III: all async operations MUST show progress)
 - [ ] T028 [US1] Implement `render_validation_result` in `src/paychecks/reporter/terminal.py`: Rich Table with columns field/expected/actual/status; color-code ✅/❌/⚠️ status badges; ISO 8601 dates; `$X.XX` currency format
 - [ ] T029 [US1] Implement `--output` dispatch in `src/paychecks/cli.py`: detect `.txt` vs `.csv` extension; call `text_export.write_validation_txt` or `csv_export.write_validation_csv`; always also print to terminal
 
@@ -141,7 +141,7 @@ description: "Task list for Paycheck & W-2 Validator"
 
 - [ ] T043 [P] Add `hypothesis` property-based tests for financial calculations in `tests/unit/test_validator_paycheck.py`: fuzz `validate_paycheck` with random salary/deduction combos; assert `gross - sum(deductions) = net` invariant within tolerance
 - [ ] T044 [P] Add dedicated edge-case tests in `tests/unit/test_extractor_pdf.py`: password-protected PDF → ExtractionError, zero-byte PDF → ExtractionError, W-2c → ExtractionError with unsupported-format message, duplicate pay period date → warning logged to stderr
-- [ ] T045 [P] Add performance benchmark tests in `tests/integration/`: assert `paychecks validate` completes in <2s for a single PDF; assert `paychecks reconcile` with 52 PDFs completes in <10s (constitution Principle IV)
+- [ ] T045 [P] Add performance benchmark tests in `tests/integration/test_performance.py`: (1) assert `paychecks validate` completes in <2s for a single PDF via `time.perf_counter`; (2) assert `paychecks reconcile` with 52 PDFs completes in <10s total; (3) assert `paychecks --version` (startup) completes in <3s; (4) assert peak memory during a 52-PDF reconcile stays below 200MB using `tracemalloc` (all per constitution Principle IV)
 - [ ] T046 Validate all quickstart.md scenarios end-to-end: run each scenario from `specs/001-paycheck-w2-validator/quickstart.md` and confirm expected outputs
 - [ ] T047 [P] Final coverage check: run `uv run pytest --cov=src/paychecks --cov-report=term-missing --cov-fail-under=80`; identify any module below threshold and add targeted unit tests
 
@@ -155,7 +155,7 @@ description: "Task list for Paycheck & W-2 Validator"
 - **Foundational (Phase 2)**: Depends on Phase 1 — BLOCKS all user stories
 - **US1 (Phase 3)**: Depends on Phase 2 — no dependency on US2 or US3
 - **US2 (Phase 4)**: Depends on Phase 2 — no dependency on US1 (can run in parallel with US3)
-- **US3 (Phase 5)**: Depends on Phase 2 — no dependency on US1 or US2 (can run in parallel)
+- **US3 (Phase 5)**: Depends on Phase 2 **and** US1 T026 (`validate_paycheck` function) — can run in parallel with US2 once T026 is complete
 - **Polish (Phase 6)**: Depends on all desired user stories being complete
 
 ### User Story Dependencies
