@@ -31,6 +31,29 @@ Verify:
 paychecks --help
 ```
 
+## Try it with the included examples
+
+The `examples/` directory contains 26 synthetic bi-weekly paycheck PDFs for a $95,000 salary (tax year 2025) plus a matching W-2. Use these to explore all three commands without needing your own PDFs.
+
+```bash
+# Validate a single paycheck
+paychecks validate examples/paycheck_01_2025-01-01.pdf \
+  --salary 95000 \
+  --frequency biweekly
+
+# Reconcile the full year against the W-2
+paychecks reconcile examples/ examples/w2_2025.pdf \
+  --salary 95000 \
+  --frequency biweekly
+
+# Batch-validate all 26 paychecks at once
+paychecks batch examples/ \
+  --salary 95000 \
+  --frequency biweekly
+```
+
+All three commands should exit 0 and show all fields as ✅ PASS.
+
 ## Usage
 
 ### Validate a single paycheck
