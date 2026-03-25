@@ -31,9 +31,7 @@ class TestBatchCommand:
 
     def test_bad_pdf_in_batch_exits_nonzero(self, tmp_path):
         # One valid + one bad PDF
-        PaycheckBuilder(annual_salary=120_000, frequency="biweekly").save(
-            tmp_path / "good.pdf"
-        )
+        PaycheckBuilder(annual_salary=120_000, frequency="biweekly").save(tmp_path / "good.pdf")
         bad = tmp_path / "bad.pdf"
         bad.write_bytes(b"not a pdf")
         result = runner.invoke(

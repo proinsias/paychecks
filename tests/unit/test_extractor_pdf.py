@@ -1,7 +1,5 @@
 """Unit tests for pdfplumber PDF extractor."""
 
-
-
 from paychecks.models import ExtractionError, ExtractionMethod, Paycheck
 from tests.fixtures.builders.paycheck_builder import PaycheckBuilder
 

@@ -31,7 +31,7 @@ description: "Task list for Paycheck & W-2 Validator"
 
 - [x] T001 Initialize uv project: create `pyproject.toml` with `[project]` metadata, `[project.scripts]` entry `paychecks = "paychecks.cli:app"`, and dependency groups for runtime and dev
 - [x] T002 Create `src/paychecks/` package with `__init__.py`, `cli.py` (empty Typer app stub), and sub-package stubs: `models/`, `extractor/`, `validator/`, `reporter/`
-- [x] T003 [P] Configure ruff in `pyproject.toml` (`[tool.ruff]`): enable linting + formatting rules; add `pre-commit` hook or `Makefile` lint target
+- [x] T003 [P] Configure ruff in `pyproject.toml` (`[tool.ruff]`): enable linting + formatting rules; add `pre-commit` hook or `mise` lint target
 - [x] T004 [P] Configure pytest in `pyproject.toml` (`[tool.pytest.ini_options]`): set `testpaths = ["tests"]`, `addopts = "--strict-markers"`; configure `pytest-cov` with `--cov=src/paychecks --cov-fail-under=80`
 - [x] T005 [P] Create `tests/` directory structure: `tests/conftest.py` (empty), `tests/unit/`, `tests/integration/`, `tests/fixtures/builders/` with `__init__.py` files
 
