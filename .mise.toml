@@ -1,0 +1,49 @@
+# Don't put credentials or other secrets into this shared file!
+[hooks]
+enter = "mise i -q"
+
+[settings]
+env_file = ".env"
+experimental = true
+gpg_verify = true
+idiomatic_version_file_enable_tools = ["python"]
+python.uv_venv_auto = true  # Use uv venv.
+status.missing_tools = "always"
+status.show_env = true
+
+
+[tasks.format]
+description = "Run ruff formatter"
+run = [
+    "uv run ruff format src/ tests/",
+]
+
+[tasks.lint]
+description = "Run ruff linter"
+run = [
+    "uv run ruff check src/ tests/",
+]
+
+[tasks.test]
+description = "Run pytests"
+run = [
+    "uv run pytest",
+]
+
+[tasks.all]
+depends=[
+    "format",
+    "lint",
+    "test",
+]
+description = "Run all tasks"
+
+[tools]
+actionlint = "latest"
+bats = "latest"
+editorconfig-checker = "latest"
+prettier = "latest"
+ripsecrets = { version = "latest", os = ["linux/amd64", "darwin"] }
+shellcheck = "latest"
+shfmt = "v3.12.0"
+uv = "latest"

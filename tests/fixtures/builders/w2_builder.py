@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from decimal import Decimal
 from pathlib import Path
 
@@ -22,15 +23,21 @@ class W2Builder:
             else (salary * Decimal("0.22")).quantize(Decimal("0.01"))
         )
         self.box3_ss_wages = overrides.get("box3_ss_wages", salary)
-        self.box4_ss_tax = overrides.get("box4_ss_tax", (salary * Decimal("0.062")).quantize(Decimal("0.01")))
+        self.box4_ss_tax = overrides.get(
+            "box4_ss_tax", (salary * Decimal("0.062")).quantize(Decimal("0.01"))
+        )
         self.box5_medicare_wages = overrides.get("box5_medicare_wages", salary)
-        self.box6_medicare_tax = overrides.get("box6_medicare_tax", (salary * Decimal("0.0145")).quantize(Decimal("0.01")))
+        self.box6_medicare_tax = overrides.get(
+            "box6_medicare_tax", (salary * Decimal("0.0145")).quantize(Decimal("0.01"))
+        )
         self.box16_state_wages = overrides.get("box16_state_wages", salary)
-        self.box17_state_tax = overrides.get("box17_state_tax", (salary * Decimal("0.06")).quantize(Decimal("0.01")))
+        self.box17_state_tax = overrides.get(
+            "box17_state_tax", (salary * Decimal("0.06")).quantize(Decimal("0.01"))
+        )
 
     def save(self, path: str | Path) -> Path:
-        from reportlab.pdfgen import canvas
         from reportlab.lib.pagesizes import letter
+        from reportlab.pdfgen import canvas
 
         path = Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -39,6 +46,7 @@ class W2Builder:
         c.drawString(50, 750, f"W-2 Wage and Tax Statement — {self.tax_year}")
         c.setFont("Helvetica", 12)
         y = 710
+
         def line(text: str) -> None:
             nonlocal y
             c.drawString(50, y, text)

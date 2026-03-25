@@ -1,15 +1,19 @@
 from __future__ import annotations
+
 from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
 from pathlib import Path
+
 from .enums import ExtractionMethod
 from .results import FieldResult, ValidationStatus
+
 
 @dataclass(frozen=True)
 class Deduction:
     name: str
     amount: Decimal  # always positive
+
 
 @dataclass(frozen=True)
 class Paycheck:
@@ -24,6 +28,7 @@ class Paycheck:
     other_deductions: tuple[Deduction, ...]
     net_pay: Decimal
     extraction_method: ExtractionMethod
+
 
 @dataclass(frozen=True)
 class PaycheckValidationResult:

@@ -1,9 +1,11 @@
 from __future__ import annotations
-from pathlib import Path
-from paychecks.models import PaycheckValidationResult
-from paychecks.constants import CURRENCY_SYMBOL
-from paychecks.models.results import ValidationStatus
+
 from decimal import Decimal
+from pathlib import Path
+
+from paychecks.constants import CURRENCY_SYMBOL
+from paychecks.models import PaycheckValidationResult
+from paychecks.models.results import ValidationStatus
 
 
 def _fmt(value: Decimal | None) -> str:

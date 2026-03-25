@@ -1,16 +1,12 @@
 """Unit tests for paycheck validation logic — write first, must fail before T026 implementation."""
+
 from datetime import date
 from decimal import Decimal
 from pathlib import Path
 
-import pytest
-
 from paychecks.models import (
-    Deduction,
     ExtractionMethod,
-    FieldResult,
     Paycheck,
-    PaycheckValidationResult,
     PayFrequency,
     SalaryChange,
     SalarySchedule,
@@ -28,9 +24,7 @@ def make_paycheck(
     ss = (gross_pay * Decimal("0.062")).quantize(Decimal("0.01"))
     medicare = (gross_pay * Decimal("0.0145")).quantize(Decimal("0.01"))
     state = (gross_pay * Decimal("0.06")).quantize(Decimal("0.01"))
-    total_deductions = federal + ss + medicare + state + sum(
-        d.amount for d in other_deductions
-    )
+    total_deductions = federal + ss + medicare + state + sum(d.amount for d in other_deductions)
     return Paycheck(
         source_file=Path("/tmp/test.pdf"),
         pay_period_start=period_start,
@@ -41,12 +35,16 @@ def make_paycheck(
         medicare_tax_withheld=medicare,
         state_tax_withheld=state,
         other_deductions=other_deductions,
-        net_pay=net_pay if net_pay is not None else (gross_pay - total_deductions).quantize(Decimal("0.01")),
+        net_pay=net_pay
+        if net_pay is not None
+        else (gross_pay - total_deductions).quantize(Decimal("0.01")),
         extraction_method=ExtractionMethod.PDFPLUMBER,
     )
 
 
-def make_schedule(annual: float = 120_000, freq: PayFrequency = PayFrequency.BIWEEKLY) -> SalarySchedule:
+def make_schedule(
+    annual: float = 120_000, freq: PayFrequency = PayFrequency.BIWEEKLY
+) -> SalarySchedule:
     return SalarySchedule(
         base_annual_salary=Decimal(str(annual)),
         frequency=freq,
@@ -56,6 +54,7 @@ def make_schedule(annual: float = 120_000, freq: PayFrequency = PayFrequency.BIW
 class TestGrossPayValidation:
     def test_gross_pay_pass(self):
         from paychecks.validator.paycheck import validate_paycheck
+
         schedule = make_schedule(120_000)
         paycheck = make_paycheck(gross_pay=Decimal("4615.38"))
         result = validate_paycheck(paycheck, schedule)
@@ -64,6 +63,7 @@ class TestGrossPayValidation:
 
     def test_gross_pay_fail(self):
         from paychecks.validator.paycheck import validate_paycheck
+
         schedule = make_schedule(100_000)  # wrong salary
         paycheck = make_paycheck(gross_pay=Decimal("4615.38"))  # actual is $120k/26
         result = validate_paycheck(paycheck, schedule)
@@ -72,6 +72,7 @@ class TestGrossPayValidation:
 
     def test_gross_pay_within_tolerance(self):
         from paychecks.validator.paycheck import validate_paycheck
+
         schedule = make_schedule(120_000)
         # 120000/26 = 4615.384..., rounded gives 4615.38; with $0.01 diff still PASS
         paycheck = make_paycheck(gross_pay=Decimal("4615.39"))
@@ -81,6 +82,7 @@ class TestGrossPayValidation:
 
     def test_supplemental_pay_is_warning(self):
         from paychecks.validator.paycheck import validate_paycheck
+
         schedule = make_schedule(120_000)
         # Gross significantly higher than expected = supplemental pay
         paycheck = make_paycheck(gross_pay=Decimal("10000.00"))
@@ -92,6 +94,7 @@ class TestGrossPayValidation:
 class TestNetPayValidation:
     def test_net_pay_pass(self):
         from paychecks.validator.paycheck import validate_paycheck
+
         schedule = make_schedule(120_000)
         paycheck = make_paycheck()  # net_pay computed correctly
         result = validate_paycheck(paycheck, schedule)
@@ -100,6 +103,7 @@ class TestNetPayValidation:
 
     def test_net_pay_fail(self):
         from paychecks.validator.paycheck import validate_paycheck
+
         schedule = make_schedule(120_000)
         paycheck = make_paycheck(net_pay=Decimal("100.00"))  # obviously wrong
         result = validate_paycheck(paycheck, schedule)
@@ -110,6 +114,7 @@ class TestNetPayValidation:
 class TestMidYearSalaryChange:
     def test_uses_correct_salary_before_change(self):
         from paychecks.validator.paycheck import validate_paycheck
+
         schedule = SalarySchedule(
             base_annual_salary=Decimal("100000"),
             frequency=PayFrequency.BIWEEKLY,
@@ -126,6 +131,7 @@ class TestMidYearSalaryChange:
 
     def test_uses_correct_salary_after_change(self):
         from paychecks.validator.paycheck import validate_paycheck
+
         schedule = SalarySchedule(
             base_annual_salary=Decimal("100000"),
             frequency=PayFrequency.BIWEEKLY,
@@ -144,6 +150,7 @@ class TestMidYearSalaryChange:
 class TestOverallStatus:
     def test_all_pass_means_passed(self):
         from paychecks.validator.paycheck import validate_paycheck
+
         schedule = make_schedule(120_000)
         paycheck = make_paycheck()
         result = validate_paycheck(paycheck, schedule)
@@ -154,7 +161,8 @@ class TestOverallStatus:
 # ---------------------------------------------------------------------------
 # Property-based tests (hypothesis)
 # ---------------------------------------------------------------------------
-from hypothesis import given, settings, strategies as st  # noqa: E402
+from hypothesis import given, settings  # noqa: E402
+from hypothesis import strategies as st
 
 
 @given(
@@ -196,7 +204,9 @@ def test_gross_pay_equals_salary_divided_by_periods(annual_salary: int, frequenc
     gross_result = next(r for r in result.field_results if r.field_name == "gross_pay")
     expected_gross = salary_dec / Decimal(str(periods))
     diff = abs(gross - expected_gross)
-    assert diff <= Decimal("0.02"), f"gross {gross} differs from expected {expected_gross} by {diff}"
+    assert diff <= Decimal("0.02"), (
+        f"gross {gross} differs from expected {expected_gross} by {diff}"
+    )
     assert gross_result.status == ValidationStatus.PASS
 
 

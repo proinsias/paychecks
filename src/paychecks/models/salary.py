@@ -1,13 +1,17 @@
 from __future__ import annotations
+
 from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
+
 from .enums import PayFrequency
+
 
 @dataclass(frozen=True)
 class SalaryChange:
     effective_date: date
     annual_salary: Decimal
+
 
 @dataclass(frozen=True)
 class SalarySchedule:
