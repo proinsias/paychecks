@@ -1,10 +1,10 @@
 from __future__ import annotations
-from decimal import Decimal
-from pathlib import Path
 
+from decimal import Decimal
+
+from rich import box
 from rich.console import Console
 from rich.table import Table
-from rich import box
 
 from paychecks.constants import CURRENCY_SYMBOL
 from paychecks.models import PaycheckValidationResult
@@ -98,11 +98,11 @@ def render_reconciliation_report(report) -> None:
     console.print(table)
 
     if report.missing_periods:
-        console.print(
-            f"[yellow]Missing periods: {', '.join(str(d) for d in report.missing_periods[:5])}"
-            + (f" (+{len(report.missing_periods)-5} more)" if len(report.missing_periods) > 5 else "")
-            + "[/yellow]"
+        extra = (
+            f" (+{len(report.missing_periods) - 5} more)" if len(report.missing_periods) > 5 else ""
         )
+        periods_str = ", ".join(str(d) for d in report.missing_periods[:5])
+        console.print(f"[yellow]Missing periods: {periods_str}{extra}[/yellow]")
 
     overall = _status_badge(report.overall_status)
     console.print(f"Overall: {overall}\n")
@@ -114,8 +114,12 @@ def render_batch_summary(results: list) -> None:
         console.print("[yellow]No paychecks were successfully processed.[/yellow]")
         return
 
-    table = Table(box=box.SIMPLE_HEAD, show_header=True, header_style="bold",
-                  title=f"Batch Validation Summary — {len(results)} paychecks")
+    table = Table(
+        box=box.SIMPLE_HEAD,
+        show_header=True,
+        header_style="bold",
+        title=f"Batch Validation Summary — {len(results)} paychecks",
+    )
     table.add_column("File", style="cyan", min_width=24)
     table.add_column("Period", min_width=24)
     table.add_column("Gross Pay", justify="right", min_width=12)

@@ -1,14 +1,13 @@
 from __future__ import annotations
+
 import json
 import subprocess
 from decimal import Decimal
-from datetime import date
 from pathlib import Path
 
 from paychecks.constants import CLAUDE_CLI_TIMEOUT_SECONDS
-from paychecks.models import ExtractionError, Paycheck, Deduction
+from paychecks.models import Deduction, ExtractionError, Paycheck
 from paychecks.models.enums import ExtractionMethod
-
 
 _PROMPT_TEMPLATE = """\
 Extract paycheck fields from the following text and return a JSON object with these exact keys:
@@ -58,6 +57,7 @@ def extract_paycheck_claude(path: Path, extracted_text: str) -> Paycheck | Extra
 
     try:
         from paychecks.extractor._text_parser import _parse_date_str
+
         return Paycheck(
             source_file=path,
             pay_period_start=_parse_date_str(data["pay_period_start"]),

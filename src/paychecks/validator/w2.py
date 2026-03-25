@@ -1,10 +1,11 @@
 from __future__ import annotations
+
 from datetime import date, timedelta
 from decimal import Decimal
 
 from paychecks.constants import DEFAULT_W2_TOLERANCE
 from paychecks.models import Paycheck, SalarySchedule, ValidationStatus
-from paychecks.models.w2 import ReconciliationField, ReconciliationReport, W2
+from paychecks.models.w2 import W2, ReconciliationField, ReconciliationReport
 
 
 def reconcile(
@@ -37,15 +38,18 @@ def reconcile(
             tolerance=tolerance,
         )
 
+    def q(val) -> Decimal:
+        return Decimal(str(val)).quantize(Decimal("0.01"))
+
     fields = (
-        make_field("Box 1 — Wages", w2.box1_wages, Decimal(str(total_wages)).quantize(Decimal("0.01"))),
-        make_field("Box 2 — Federal Tax", w2.box2_federal_tax_withheld, Decimal(str(total_federal)).quantize(Decimal("0.01"))),
-        make_field("Box 3 — SS Wages", w2.box3_social_security_wages, Decimal(str(total_ss_wages)).quantize(Decimal("0.01"))),
-        make_field("Box 4 — SS Tax", w2.box4_social_security_tax, Decimal(str(total_ss_tax)).quantize(Decimal("0.01"))),
-        make_field("Box 5 — Medicare Wages", w2.box5_medicare_wages, Decimal(str(total_medicare_wages)).quantize(Decimal("0.01"))),
-        make_field("Box 6 — Medicare Tax", w2.box6_medicare_tax, Decimal(str(total_medicare_tax)).quantize(Decimal("0.01"))),
-        make_field("Box 16 — State Wages", w2.box16_state_wages, Decimal(str(total_state_wages)).quantize(Decimal("0.01"))),
-        make_field("Box 17 — State Tax", w2.box17_state_tax, Decimal(str(total_state_tax)).quantize(Decimal("0.01"))),
+        make_field("Box 1 — Wages", w2.box1_wages, q(total_wages)),
+        make_field("Box 2 — Federal Tax", w2.box2_federal_tax_withheld, q(total_federal)),
+        make_field("Box 3 — SS Wages", w2.box3_social_security_wages, q(total_ss_wages)),
+        make_field("Box 4 — SS Tax", w2.box4_social_security_tax, q(total_ss_tax)),
+        make_field("Box 5 — Medicare Wages", w2.box5_medicare_wages, q(total_medicare_wages)),
+        make_field("Box 6 — Medicare Tax", w2.box6_medicare_tax, q(total_medicare_tax)),
+        make_field("Box 16 — State Wages", w2.box16_state_wages, q(total_state_wages)),
+        make_field("Box 17 — State Tax", w2.box17_state_tax, q(total_state_tax)),
     )
 
     # Detect missing pay periods

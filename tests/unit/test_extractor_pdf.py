@@ -1,8 +1,4 @@
 """Unit tests for pdfplumber PDF extractor."""
-import tempfile
-from pathlib import Path
-
-import pytest
 
 from paychecks.models import ExtractionError, ExtractionMethod, Paycheck
 from tests.fixtures.builders.paycheck_builder import PaycheckBuilder
@@ -11,6 +7,7 @@ from tests.fixtures.builders.paycheck_builder import PaycheckBuilder
 class TestPdfExtractor:
     def test_extract_valid_paycheck(self, tmp_path):
         from paychecks.extractor.pdf import extract_paycheck
+
         pdf_path = PaycheckBuilder(annual_salary=120_000, frequency="biweekly").save(
             tmp_path / "paycheck.pdf"
         )
@@ -22,6 +19,7 @@ class TestPdfExtractor:
 
     def test_extract_returns_error_for_bad_file(self, tmp_path):
         from paychecks.extractor.pdf import extract_paycheck
+
         bad = tmp_path / "bad.pdf"
         bad.write_bytes(b"not a pdf")
         result = extract_paycheck(bad)
@@ -30,9 +28,11 @@ class TestPdfExtractor:
 
     def test_extraction_error_has_filename(self, tmp_path):
         from paychecks.extractor.pdf import extract_paycheck
+
         bad = tmp_path / "missing_fields.pdf"
         # Empty PDF with no paycheck content
         from reportlab.pdfgen import canvas
+
         c = canvas.Canvas(str(bad))
         c.drawString(50, 750, "This is not a paycheck")
         c.save()

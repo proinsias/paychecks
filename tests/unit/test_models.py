@@ -1,8 +1,11 @@
-"""Unit tests for all model dataclasses. Write first — must fail before T009–T012 are implemented."""
+"""Unit tests for all model dataclasses.
+
+Write first — must fail before T009–T012 are implemented.
+"""
+
 from datetime import date
 from decimal import Decimal
 from pathlib import Path
-import pytest
 
 from paychecks.models import (
     Deduction,
@@ -79,8 +82,7 @@ class TestSalarySchedule:
 class TestPaycheckValidationResult:
     def make_result(self, statuses: list[ValidationStatus]) -> PaycheckValidationResult:
         field_results = tuple(
-            FieldResult(f"field_{i}", None, None, s)
-            for i, s in enumerate(statuses)
+            FieldResult(f"field_{i}", None, None, s) for i, s in enumerate(statuses)
         )
         return PaycheckValidationResult(
             paycheck=make_paycheck(),

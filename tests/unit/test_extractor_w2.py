@@ -1,5 +1,5 @@
 """Unit tests for W-2 PDF extractor."""
-from pathlib import Path
+
 from decimal import Decimal
 
 from paychecks.models import ExtractionError
@@ -10,6 +10,7 @@ from tests.fixtures.builders.w2_builder import W2Builder
 class TestW2Extractor:
     def test_extract_valid_w2(self, tmp_path):
         from paychecks.extractor.pdf import extract_w2
+
         w2_path = W2Builder(annual_salary=120_000, tax_year=2025).save(tmp_path / "w2.pdf")
         result = extract_w2(w2_path)
         assert isinstance(result, W2), f"Expected W2, got: {result}"
@@ -18,14 +19,17 @@ class TestW2Extractor:
 
     def test_extract_returns_error_for_bad_file(self, tmp_path):
         from paychecks.extractor.pdf import extract_w2
+
         bad = tmp_path / "bad.pdf"
         bad.write_bytes(b"not a pdf")
         result = extract_w2(bad)
         assert isinstance(result, ExtractionError)
 
     def test_w2c_detection_returns_error(self, tmp_path):
-        from paychecks.extractor.pdf import extract_w2
         from reportlab.pdfgen import canvas
+
+        from paychecks.extractor.pdf import extract_w2
+
         w2c_path = tmp_path / "w2c.pdf"
         c = canvas.Canvas(str(w2c_path))
         c.setFont("Helvetica-Bold", 16)

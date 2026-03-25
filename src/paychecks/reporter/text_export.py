@@ -1,9 +1,11 @@
 from __future__ import annotations
-from pathlib import Path
-from paychecks.models import PaycheckValidationResult
-from paychecks.constants import CURRENCY_SYMBOL
-from paychecks.models.results import ValidationStatus
+
 from decimal import Decimal
+from pathlib import Path
+
+from paychecks.constants import CURRENCY_SYMBOL
+from paychecks.models import PaycheckValidationResult
+from paychecks.models.results import ValidationStatus
 
 
 def _fmt(value: Decimal | None) -> str:
@@ -26,7 +28,8 @@ def write_validation_txt(result: PaycheckValidationResult, path: Path) -> None:
     ]
     for fr in result.field_results:
         lines.append(
-            f"{fr.field_name:<30} {_fmt(fr.expected):>12} {_fmt(fr.actual):>12} {_status(fr.status):>8}"
+            f"{fr.field_name:<30} {_fmt(fr.expected):>12}"
+            f" {_fmt(fr.actual):>12} {_status(fr.status):>8}"
         )
     lines += ["", f"Overall: {_status(result.overall_status)}"]
     path.write_text("\n".join(lines))
@@ -46,7 +49,8 @@ def write_reconciliation_txt(report, path: Path) -> None:
         if f.difference < 0:
             diff_str = f"-{diff_str}"
         lines.append(
-            f"{f.field_name:<30} {_fmt(f.paycheck_total):>15} {_fmt(f.w2_value):>12} {diff_str:>10} {_status(f.status):>8}"
+            f"{f.field_name:<30} {_fmt(f.paycheck_total):>15}"
+            f" {_fmt(f.w2_value):>12} {diff_str:>10} {_status(f.status):>8}"
         )
     if report.missing_periods:
         lines += ["", f"Missing periods: {', '.join(str(d) for d in report.missing_periods)}"]
@@ -65,7 +69,8 @@ def write_batch_txt(results: list, path: Path) -> None:
         p = r.paycheck
         period = f"{p.pay_period_start} \u2013 {p.pay_period_end}"
         lines.append(
-            f"{p.source_file.name:<24} {period:<24} {_fmt(p.gross_pay):>12} {_fmt(p.net_pay):>12} {_status(r.overall_status):>8}"
+            f"{p.source_file.name:<24} {period:<24}"
+            f" {_fmt(p.gross_pay):>12} {_fmt(p.net_pay):>12} {_status(r.overall_status):>8}"
         )
     passed = sum(1 for r in results if r.overall_status.value == "PASS")
     failed = sum(1 for r in results if r.overall_status.value == "FAIL")

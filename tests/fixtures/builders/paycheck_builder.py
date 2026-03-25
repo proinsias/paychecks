@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from datetime import date, timedelta
 from decimal import Decimal
 from pathlib import Path
@@ -28,9 +29,11 @@ class PaycheckBuilder:
 
         if isinstance(period_start, str):
             from datetime import datetime
+
             period_start = datetime.strptime(period_start, "%Y-%m-%d").date()
         if isinstance(period_end, str):
             from datetime import datetime
+
             period_end = datetime.strptime(period_end, "%Y-%m-%d").date()
 
         self.period_start: date = period_start or date(2025, 1, 1)
@@ -43,8 +46,7 @@ class PaycheckBuilder:
         self.state_tax = (self.gross_pay * Decimal("0.06")).quantize(Decimal("0.01"))
         self.retirement = (self.gross_pay * Decimal("0.05")).quantize(Decimal("0.01"))
         total_deductions = (
-            self.federal_tax + self.ss_tax + self.medicare_tax
-            + self.state_tax + self.retirement
+            self.federal_tax + self.ss_tax + self.medicare_tax + self.state_tax + self.retirement
         )
         self.net_pay = (
             Decimal(str(net_pay_override))
@@ -54,8 +56,8 @@ class PaycheckBuilder:
 
     def save(self, path: str | Path) -> Path:
         """Save synthetic paycheck PDF to path."""
-        from reportlab.pdfgen import canvas
         from reportlab.lib.pagesizes import letter
+        from reportlab.pdfgen import canvas
 
         path = Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -64,12 +66,15 @@ class PaycheckBuilder:
         c.drawString(50, 750, "ACME CORP — PAYCHECK")
         c.setFont("Helvetica", 12)
         y = 710
+
         def line(text: str) -> None:
             nonlocal y
             c.drawString(50, y, text)
             y -= 20
 
-        line(f"Pay Period: {self.period_start.strftime('%m/%d/%Y')} to {self.period_end.strftime('%m/%d/%Y')}")
+        start_str = self.period_start.strftime("%m/%d/%Y")
+        end_str = self.period_end.strftime("%m/%d/%Y")
+        line(f"Pay Period: {start_str} to {end_str}")
         line("")
         line(f"Gross Pay: ${self.gross_pay:,.2f}")
         line(f"Federal Income Tax: ${self.federal_tax:,.2f}")
@@ -85,6 +90,7 @@ class PaycheckBuilder:
     def build_year(self, year: int) -> list[Path]:
         """Generate full year of paycheck PDFs into a temp directory."""
         import tempfile
+
         tmpdir = Path(tempfile.mkdtemp(prefix=f"paychecks_{year}_"))
         days_map = {"weekly": 7, "biweekly": 14, "semimonthly": 15, "monthly": 30}
         period_days = days_map[self.frequency]
@@ -101,6 +107,6 @@ class PaycheckBuilder:
                 period_start=ps,
                 period_end=pe,
             )
-            p = b.save(tmpdir / f"paycheck_{i+1:02d}.pdf")
+            p = b.save(tmpdir / f"paycheck_{i + 1:02d}.pdf")
             paths.append(p)
         return paths

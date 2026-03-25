@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import re
 from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
@@ -64,22 +65,36 @@ def parse_paycheck_from_text(
             )
         val = _parse_amount(m.group(1))
         if val is None:
-            return ExtractionError(source_file=path, field_name=field,
-                                   message=f"Could not parse {field} in {path.name}.", page_number=1)
+            return ExtractionError(
+                source_file=path,
+                field_name=field,
+                message=f"Could not parse {field} in {path.name}.",
+                page_number=1,
+            )
         return val
 
     gross = find_amount(r"gross\s*(?:pay|earnings)[:\s]+\$?([\d,]+\.\d{2})", "gross_pay")
-    if isinstance(gross, ExtractionError): return gross
+    if isinstance(gross, ExtractionError):
+        return gross
     net = find_amount(r"net\s*pay[:\s]+\$?([\d,]+\.\d{2})", "net_pay")
-    if isinstance(net, ExtractionError): return net
-    federal = find_amount(r"federal\s*(?:income\s*)?tax[:\s]+\$?([\d,]+\.\d{2})", "federal_tax_withheld")
-    if isinstance(federal, ExtractionError): return federal
-    ss = find_amount(r"social\s*security\s*(?:tax)?[:\s]+\$?([\d,]+\.\d{2})", "social_security_tax_withheld")
-    if isinstance(ss, ExtractionError): return ss
+    if isinstance(net, ExtractionError):
+        return net
+    federal = find_amount(
+        r"federal\s*(?:income\s*)?tax[:\s]+\$?([\d,]+\.\d{2})", "federal_tax_withheld"
+    )
+    if isinstance(federal, ExtractionError):
+        return federal
+    ss = find_amount(
+        r"social\s*security\s*(?:tax)?[:\s]+\$?([\d,]+\.\d{2})", "social_security_tax_withheld"
+    )
+    if isinstance(ss, ExtractionError):
+        return ss
     medicare = find_amount(r"medicare[:\s]+\$?([\d,]+\.\d{2})", "medicare_tax_withheld")
-    if isinstance(medicare, ExtractionError): return medicare
+    if isinstance(medicare, ExtractionError):
+        return medicare
     state = find_amount(r"state\s*(?:income\s*)?tax[:\s]+\$?([\d,]+\.\d{2})", "state_tax_withheld")
-    if isinstance(state, ExtractionError): return state
+    if isinstance(state, ExtractionError):
+        return state
 
     deduction_pattern = re.compile(
         r"(401\(k\)|health\s*insurance|dental|vision|hsa|fsa|life\s*insurance|disability)[:\s]+\$?([\d,]+\.\d{2})",

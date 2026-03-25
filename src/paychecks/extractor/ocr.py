@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from pathlib import Path
 
 from paychecks.models import ExtractionError, Paycheck
@@ -45,5 +46,6 @@ def extract_paycheck_ocr(path: Path) -> Paycheck | ExtractionError:
     # Reuse pdfplumber regex logic on OCR text by writing to a temp file
     # and parsing with the same patterns via a thin adapter.
     from paychecks.extractor._text_parser import parse_paycheck_from_text
+
     result = parse_paycheck_from_text(path, "\n".join(texts), ExtractionMethod.OCR)
     return result

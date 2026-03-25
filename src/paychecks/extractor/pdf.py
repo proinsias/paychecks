@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import re
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
@@ -11,7 +12,7 @@ from paychecks.models import (
     ExtractionMethod,
     Paycheck,
 )
-from paychecks.models.errors import ExtractionError
+from paychecks.models.w2 import W2
 
 
 def _parse_amount(text: str) -> Decimal | None:
@@ -25,10 +26,10 @@ def _parse_amount(text: str) -> Decimal | None:
 
 def _parse_date(text: str):
     """Parse a date string in MM/DD/YYYY or YYYY-MM-DD format."""
-    from datetime import date
     for fmt in ("%m/%d/%Y", "%Y-%m-%d", "%m-%d-%Y"):
         try:
             from datetime import datetime
+
             return datetime.strptime(text.strip(), fmt).date()
         except ValueError:
             continue
@@ -39,9 +40,7 @@ def extract_paycheck(path: Path) -> Paycheck | ExtractionError:
     """Extract paycheck fields from a text-based PDF using pdfplumber."""
     try:
         with pdfplumber.open(path) as pdf:
-            full_text = "\n".join(
-                page.extract_text() or "" for page in pdf.pages
-            )
+            full_text = "\n".join(page.extract_text() or "" for page in pdf.pages)
     except Exception as exc:
         return ExtractionError(
             source_file=path,
@@ -100,11 +99,15 @@ def extract_paycheck(path: Path) -> Paycheck | ExtractionError:
     if isinstance(net, ExtractionError):
         return net
 
-    federal = find_amount(r"federal\s*(?:income\s*)?tax[:\s]+\$?([\d,]+\.\d{2})", "federal_tax_withheld")
+    federal = find_amount(
+        r"federal\s*(?:income\s*)?tax[:\s]+\$?([\d,]+\.\d{2})", "federal_tax_withheld"
+    )
     if isinstance(federal, ExtractionError):
         return federal
 
-    ss = find_amount(r"social\s*security\s*(?:tax)?[:\s]+\$?([\d,]+\.\d{2})", "social_security_tax_withheld")
+    ss = find_amount(
+        r"social\s*security\s*(?:tax)?[:\s]+\$?([\d,]+\.\d{2})", "social_security_tax_withheld"
+    )
     if isinstance(ss, ExtractionError):
         return ss
 
@@ -141,7 +144,7 @@ def extract_paycheck(path: Path) -> Paycheck | ExtractionError:
     )
 
 
-def extract_w2(path: Path) -> "W2 | ExtractionError":
+def extract_w2(path: Path) -> W2 | ExtractionError:
     """Extract W-2 fields from a standard IRS Form W-2 PDF."""
     from paychecks.models.w2 import W2
 
@@ -161,9 +164,9 @@ def extract_w2(path: Path) -> "W2 | ExtractionError":
             source_file=path,
             field_name="<w2c>",
             message=(
-                f"Form W-2c (corrected W-2) is not supported. "
-                f"Please use the original Form W-2 or the final corrected copy reissued as a standard W-2. "
-                f"File: {path.name}"
+                "Form W-2c (corrected W-2) is not supported. "
+                "Please use the original Form W-2 or the final corrected copy "
+                f"reissued as a standard W-2. File: {path.name}"
             ),
         )
 
@@ -171,15 +174,24 @@ def extract_w2(path: Path) -> "W2 | ExtractionError":
     year_match = re.search(r"\b(20\d{2})\b", full_text)
     tax_year = int(year_match.group(1)) if year_match else 0
 
-    def find_box_simple(label: str, field: str) -> "Decimal | ExtractionError":
-        m = re.search(rf"{re.escape(label)}[^$\n]*\$?([\d,]+\.\d{{2}})", full_text, re.IGNORECASE)
+    def find_box_simple(label: str, field: str) -> Decimal | ExtractionError:
+        pattern = rf"{re.escape(label)}[^$\n]*\$?([\d,]+\.\d{{2}})"
+        m = re.search(pattern, full_text, re.IGNORECASE)
         if not m:
-            return ExtractionError(source_file=path, field_name=field,
-                                   message=f"W-2 {field} ({label}) not found in {path.name}.", page_number=1)
+            return ExtractionError(
+                source_file=path,
+                field_name=field,
+                message=f"W-2 {field} ({label}) not found in {path.name}.",
+                page_number=1,
+            )
         val = _parse_amount(m.group(1))
         if val is None:
-            return ExtractionError(source_file=path, field_name=field,
-                                   message=f"Could not parse W-2 {field} in {path.name}.", page_number=1)
+            return ExtractionError(
+                source_file=path,
+                field_name=field,
+                message=f"Could not parse W-2 {field} in {path.name}.",
+                page_number=1,
+            )
         return val
 
     box1 = find_box_simple("Box 1", "box1_wages")

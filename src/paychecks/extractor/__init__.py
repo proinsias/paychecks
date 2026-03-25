@@ -1,12 +1,13 @@
 from __future__ import annotations
+
 from pathlib import Path
 
 import pdfplumber
 
-from paychecks.models import ExtractionError, Paycheck
-from paychecks.extractor.pdf import extract_paycheck as _extract_pdfplumber
-from paychecks.extractor.ocr import extract_paycheck_ocr as _extract_ocr
 from paychecks.extractor.claude_fallback import extract_paycheck_claude as _extract_claude
+from paychecks.extractor.ocr import extract_paycheck_ocr as _extract_ocr
+from paychecks.extractor.pdf import extract_paycheck as _extract_pdfplumber
+from paychecks.models import ExtractionError, Paycheck
 
 
 def extract(path: Path) -> Paycheck | ExtractionError:

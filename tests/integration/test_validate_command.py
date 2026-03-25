@@ -1,4 +1,5 @@
 """Integration tests for the `paychecks validate` CLI command."""
+
 from typer.testing import CliRunner
 
 from paychecks.cli import app
@@ -47,7 +48,16 @@ class TestValidateCommand:
         out = tmp_path / "report.csv"
         result = runner.invoke(
             app,
-            ["validate", str(pdf), "--salary", "120000", "--frequency", "biweekly", "--output", str(out)],
+            [
+                "validate",
+                str(pdf),
+                "--salary",
+                "120000",
+                "--frequency",
+                "biweekly",
+                "--output",
+                str(out),
+            ],
         )
         assert result.exit_code == 0
         assert out.exists()
@@ -62,7 +72,16 @@ class TestValidateCommand:
         out = tmp_path / "report.txt"
         result = runner.invoke(
             app,
-            ["validate", str(pdf), "--salary", "120000", "--frequency", "biweekly", "--output", str(out)],
+            [
+                "validate",
+                str(pdf),
+                "--salary",
+                "120000",
+                "--frequency",
+                "biweekly",
+                "--output",
+                str(out),
+            ],
         )
         assert result.exit_code == 0
         assert out.exists()

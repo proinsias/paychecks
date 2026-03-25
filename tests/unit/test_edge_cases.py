@@ -1,4 +1,5 @@
 """Edge-case tests for extractors, validators, reporters, and batch processing."""
+
 from __future__ import annotations
 
 from datetime import date
@@ -6,15 +7,13 @@ from decimal import Decimal
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-import pytest
-
-from paychecks.extractor.pdf import extract_paycheck, extract_w2
 from paychecks.extractor._text_parser import parse_paycheck_from_text
+from paychecks.extractor.pdf import extract_paycheck, extract_w2
 from paychecks.models import ExtractionError, Paycheck
 from paychecks.models.enums import ExtractionMethod, PayFrequency
 from paychecks.models.salary import SalarySchedule
-from paychecks.reporter.text_export import write_validation_txt, write_batch_txt
-from paychecks.reporter.csv_export import write_validation_csv, write_batch_csv
+from paychecks.reporter.csv_export import write_batch_csv, write_validation_csv
+from paychecks.reporter.text_export import write_batch_txt, write_validation_txt
 from paychecks.validator.paycheck import validate_batch
 
 
@@ -63,9 +62,7 @@ class TestW2cDetection:
         fake_pdf.write_bytes(b"%PDF-1.4 placeholder")
 
         mock_page = MagicMock()
-        mock_page.extract_text.return_value = (
-            "W-2c corrected wage statement Box 1 $50000.00"
-        )
+        mock_page.extract_text.return_value = "W-2c corrected wage statement Box 1 $50000.00"
         mock_pdf = MagicMock()
         mock_pdf.__enter__ = MagicMock(return_value=mock_pdf)
         mock_pdf.__exit__ = MagicMock(return_value=False)
@@ -144,21 +141,13 @@ class TestTextParser:
 
     def test_parse_missing_gross_pay_returns_error(self):
         text = "Pay Period: 01/01/2025 to 01/14/2025\nNet Pay: $1000.00"
-        result = parse_paycheck_from_text(
-            Path("/tmp/test.pdf"), text, ExtractionMethod.PDFPLUMBER
-        )
+        result = parse_paycheck_from_text(Path("/tmp/test.pdf"), text, ExtractionMethod.PDFPLUMBER)
         assert isinstance(result, ExtractionError)
         assert result.field_name == "gross_pay"
 
     def test_parse_missing_federal_tax_returns_error(self):
-        text = (
-            "Pay Period: 01/01/2025 to 01/14/2025\n"
-            "Gross Pay: $4615.38\n"
-            "Net Pay: $3000.00\n"
-        )
-        result = parse_paycheck_from_text(
-            Path("/tmp/test.pdf"), text, ExtractionMethod.OCR
-        )
+        text = "Pay Period: 01/01/2025 to 01/14/2025\nGross Pay: $4615.38\nNet Pay: $3000.00\n"
+        result = parse_paycheck_from_text(Path("/tmp/test.pdf"), text, ExtractionMethod.OCR)
         assert isinstance(result, ExtractionError)
         assert result.field_name == "federal_tax_withheld"
 

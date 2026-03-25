@@ -3,6 +3,7 @@
 Mark with @pytest.mark.slow so they can be excluded from regular runs:
     uv run pytest -m "not slow"
 """
+
 from __future__ import annotations
 
 import time
@@ -48,10 +49,7 @@ def test_batch_of_ten_pdfs_validates_under_ten_seconds(tmp_path: Path) -> None:
     from paychecks.validator.paycheck import validate_batch
 
     builder = PaycheckBuilder(annual_salary=120_000, frequency="biweekly")
-    pdfs = [
-        builder.save(tmp_path / f"paycheck_{i:02d}.pdf")
-        for i in range(10)
-    ]
+    pdfs = [builder.save(tmp_path / f"paycheck_{i:02d}.pdf") for i in range(10)]
     schedule = SalarySchedule(
         base_annual_salary=Decimal("120000"),
         frequency=PayFrequency.BIWEEKLY,

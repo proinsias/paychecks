@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from decimal import Decimal
 from pathlib import Path
 
@@ -36,10 +37,15 @@ def validate_paycheck(
     elif paycheck.gross_pay > _supplemental_threshold:
         # Supplemental pay: gross greatly exceeds expected — warning, not fail
         status = ValidationStatus.WARNING
-        note = f"Gross ${paycheck.gross_pay:,.2f} exceeds expected ${expected_gross:,.2f} — possible supplemental pay"
+        note = (
+            f"Gross ${paycheck.gross_pay:,.2f} exceeds expected "
+            f"${expected_gross:,.2f} — possible supplemental pay"
+        )
     else:
         status = ValidationStatus.FAIL
-        note = f"Expected ${expected_gross:,.2f}, got ${paycheck.gross_pay:,.2f} (diff: ${diff:,.2f})"
+        note = (
+            f"Expected ${expected_gross:,.2f}, got ${paycheck.gross_pay:,.2f} (diff: ${diff:,.2f})"
+        )
     results.append(FieldResult("gross_pay", expected_gross, paycheck.gross_pay, status, note))
 
     # --- Net pay ---
@@ -54,7 +60,8 @@ def validate_paycheck(
     net_diff = abs(paycheck.net_pay - expected_net)
     net_status = ValidationStatus.PASS if net_diff <= tolerance else ValidationStatus.FAIL
     net_note = (
-        None if net_status == ValidationStatus.PASS
+        None
+        if net_status == ValidationStatus.PASS
         else f"Expected ${expected_net:,.2f}, got ${paycheck.net_pay:,.2f} (diff: ${net_diff:,.2f})"
     )
     results.append(FieldResult("net_pay", expected_net, paycheck.net_pay, net_status, net_note))
@@ -83,9 +90,10 @@ def validate_batch(
     tolerance: Decimal = DEFAULT_PAYCHECK_TOLERANCE,
 ) -> list[PaycheckValidationResult]:
     """Validate all paychecks in a list. Extraction errors are skipped with stderr output."""
+    import sys
+
     from paychecks.extractor import extract
     from paychecks.models import ExtractionError
-    import sys
 
     results = []
     for path in paths:
