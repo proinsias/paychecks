@@ -13,7 +13,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=8",
+    "pytest>=9.0.3",
     "pytest-cov>=5",
     "hypothesis>=6",
     "ruff>=0.4",
@@ -51,7 +51,7 @@ show_missing = true
 [dependency-groups]
 dev = [
     "hypothesis>=6.151.9",
-    "pytest>=9.0.2",
+    "pytest>=9.0.3",
     "pytest-cov>=7.1.0",
     "ruff>=0.15.7",
 ]
