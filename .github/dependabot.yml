@@ -1,0 +1,101 @@
+---
+# ============================================================================
+# Dependabot Configuration
+# ============================================================================
+# This file configures GitHub Dependabot to automatically check for dependency
+# updates and create pull requests when new versions are available.
+#
+# Documentation: https://docs.github.com/en/code-security/dependabot
+# ============================================================================
+
+version: 2
+updates:
+  # ==========================================================================
+  # Python Dependencies (uv)
+  # ==========================================================================
+  # Monitors Python dependencies defined in pyproject.toml
+  # Uses 'pip' ecosystem (works for Poetry, pip, pipenv, etc.)
+  #
+  # Customize for your service:
+  # - Change 'directory' if pyproject.toml is not at repo root
+  # - Adjust 'open-pull-requests-limit' based on your preference (default: 10)
+  # - Add/remove reviewers and assignees as needed
+  # ==========================================================================
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly" # Options: daily, weekly, monthly
+      day: "monday" # For weekly: monday-sunday
+      time: "09:00" # Time in UTC
+    open-pull-requests-limit: 10
+
+    # GROUP UPDATES: Combines all updates into a single PR
+    groups:
+      all-updates:
+        update-types:
+          - "major"
+          - "minor"
+          - "patch"
+
+    # OPTIONAL: Uncomment to add reviewers/assignees
+    # reviewers:
+    #   - "your-github-username"
+    # assignees:
+    #   - "your-github-username"
+
+    ignore:
+      # boto3>=1.42 requires botocore>=1.42, which conflicts with
+      # snowflake-ml-python (all versions) transitively via
+      # s3fs->aiobotocore->botocore<1.41.6. Ignore until Snowflake
+      # releases a version with a relaxed aiobotocore/botocore constraint.
+      - dependency-name: "boto3"
+        versions: [">=1.42"]
+      # pandas>=3 is incompatible with snowflake-ml-python (all versions cap
+      # pandas<3). Ignore until Snowflake ships pandas 3.x support.
+      - dependency-name: "pandas"
+        versions: [">=3"]
+      # commitizen>=4.13.10 is currently incompatible with snowflake-ml-python.
+      - dependency-name: "commitizen"
+        versions: [">=4.13.10"]
+
+  # OPTIONAL: Uncomment to ignore additional dependencies in other entries:
+  # ignore:
+  #   - dependency-name: "package-name"
+  #     versions: ["1.x", "2.x"]  # Ignore specific version ranges
+
+  # ==========================================================================
+  # GitHub Actions
+  # ==========================================================================
+  # Monitors GitHub Actions workflow files (.github/workflows/*.yml)
+  # Keeps CI/CD workflows up to date with latest action versions
+  #
+  # Note: Lower PR limit (5) since workflow updates need more careful review
+  # ==========================================================================
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 5
+
+    # GROUP UPDATES: Combines all updates into a single PR
+    groups:
+      all-updates:
+        update-types:
+          - "major"
+          - "minor"
+          - "patch"
+
+    # gh-actions-library is a private PearlHealth repository. Dependabot cannot
+    # resolve version updates for private repos it does not own, so we ignore it
+    # here to prevent the update job from failing. These references must be
+    # updated manually. Alternatively we could setup a repository.
+    ignore:
+      - dependency-name: "*gh-actions-library*"
+
+# OPTIONAL: Uncomment to add reviewers/assignees
+# reviewers:
+#   - "your-github-username"
+# assignees:
+#   - "your-github-username"
