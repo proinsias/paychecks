@@ -5,7 +5,7 @@ requires-python = ">=3.12"
 dependencies = [
     "typer>=0.26.5",
     "rich>=15.0.0",
-    "pdfplumber>=0.11.9",
+    "pdfplumber>=0.11.10",
     "pytesseract>=0.3.13",
     "pdf2image>=1.17",
     "reportlab>=4.5.1",
