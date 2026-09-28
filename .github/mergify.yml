@@ -16,7 +16,7 @@ pull_request_rules:
   - name: Label draft / WIP pull requests
     conditions:
       - or:
-        - draft=true
+        - draft
         - title~=^(\[WIP\]|WIP[:\s])
     actions:
       label:
@@ -25,8 +25,8 @@ pull_request_rules:
 
   - name: Remove work-in-progress label when ready
     conditions:
-      - draft=false
-      - title!~=^(\[WIP\]|WIP[:\s])
+      - -draft
+      - -title~=^(\[WIP\]|WIP[:\s])
       - label=work-in-progress
     actions:
       label:
