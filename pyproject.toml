@@ -3,20 +3,19 @@ name = "paychecks"
 version = "0.1.0"
 requires-python = ">=3.12"
 dependencies = [
-    "typer>=0.26.5",
+    "typer>=0.27.1",
     "rich>=15.0.0",
-    "pdfplumber>=0.11.9",
+    "pdfplumber>=0.11.10",
     "pytesseract>=0.3.13",
     "pdf2image>=1.17",
-    "reportlab>=4.5.1",
+    "reportlab>=5.0.1",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=9.0.3",
+    "pytest>=9.1.1",
     "pytest-cov>=5",
     "hypothesis>=6.165.10",
-    "ruff>=0.15.16",
 ]
 
 [project.scripts]
@@ -51,7 +50,7 @@ show_missing = true
 [dependency-groups]
 dev = [
     "hypothesis>=6.151.9",
-    "pytest>=9.0.3",
+    "pytest>=9.1.1",
     "pytest-cov>=7.1.0",
     "ruff>=0.15.7",
 ]
