@@ -7,17 +7,12 @@ pull_request_rules:
       merge:
         method: merge
 
-  - name: Delete head branch after merge
-    conditions:
-      - merged
-    actions:
-      delete_head_branch: {}
 
   - name: Label draft / WIP pull requests
     conditions:
       - or:
-        - draft
-        - title~=^(\[WIP\]|WIP[:\s])
+          - draft
+          - title~=^(\[WIP\]|WIP[:\s])
     actions:
       label:
         add:
